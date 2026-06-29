@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media.Imaging;
 
@@ -14,14 +15,10 @@ public sealed class CoverPathToImageSourceConverter : IValueConverter
         {
             try
             {
-                var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-                var fullPath = Path.Combine(localFolder, coverPath);
-                if (File.Exists(fullPath))
-                {
-                    var bitmapImage = new BitmapImage();
-                    bitmapImage.UriSource = new Uri(fullPath);
-                    return bitmapImage;
-                }
+                var uri = new Uri($"ms-appdata:///local/{coverPath.Replace('\\', '/')}");
+                var bitmapImage = new BitmapImage();
+                bitmapImage.UriSource = uri;
+                return bitmapImage;
             }
             catch
             {
@@ -29,7 +26,7 @@ public sealed class CoverPathToImageSourceConverter : IValueConverter
             }
         }
 
-        return null;
+        return new BitmapImage();
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

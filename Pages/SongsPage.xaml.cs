@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using FloatHearing.Models;
@@ -15,7 +14,7 @@ public sealed partial class SongsPage : Page
 
     public SongsPage()
     {
-        ViewModel = new SongsViewModel(App.DbContext, App.PlaybackService);
+        ViewModel = new SongsViewModel(App.PlaybackService);
         InitializeComponent();
         Loaded += SongsPage_Loaded;
         Unloaded += SongsPage_Unloaded;

@@ -61,10 +61,10 @@
                 <NavigationViewItemSeparator />
 
                 <NavigationViewItem
-                    x:Name="SettingsNavItem"
+                    x:Name="ScanFoldersNavItem"
                     Content="扫描目录"
                     Icon="Library"
-                    Tag="Settings" />
+                    Tag="ScanFolders" />
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame" IsTabStop="True" />
@@ -117,7 +117,7 @@
                         x:Name="PlayPauseButton"
                         Click="PlayPauseButton_Click"
                         ToolTipService.ToolTip="播放 / 暂停">
-                        <SymbolIcon Symbol="Play" />
+                        <SymbolIcon x:Name="PlayPauseSymbol" Symbol="Play" />
                     </Button>
                     <Button
                         Click="NextButton_Click"
@@ -139,12 +139,13 @@
             </Grid>
 
             <Slider
+                x:Name="PositionSlider"
                 Grid.Row="1"
                 Margin="0,12,0,0"
-                Maximum="{x:Bind ViewModel.Playback.Duration, Mode=OneWay}"
+                Maximum="0"
                 Minimum="0"
                 StepFrequency="1"
-                Value="{x:Bind ViewModel.Playback.CurrentPosition, Mode=TwoWay}" />
+                ValueChanged="PositionSlider_ValueChanged" />
         </Grid>
     </Grid>
 </Page>

@@ -39,5 +39,9 @@ public sealed class Song
 
     public int PlayCount { get; set; }
 
+    public bool IsFavorite { get; set; }
+
+    public int Rating { get; set; }
+
     public override string ToString() => string.IsNullOrWhiteSpace(Title) ? System.IO.Path.GetFileName(FilePath) : Title;
 }

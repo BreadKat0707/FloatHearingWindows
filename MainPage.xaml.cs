@@ -14,35 +14,6 @@ public sealed partial class MainPage : Page
 {
     public ShellViewModel ViewModel { get; }
 
-    private bool _isCompact;
-    public bool IsCompact
-    {
-        get => _isCompact;
-        set
-        {
-            _isCompact = value;
-            OnPropertyChanged(nameof(IsCompact));
-        }
-    }
-
-    private bool _isNarrow;
-    public bool IsNarrow
-    {
-        get => _isNarrow;
-        set
-        {
-            _isNarrow = value;
-            OnPropertyChanged(nameof(IsNarrow));
-        }
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
     public MainPage()
     {
         ViewModel = new ShellViewModel(App.PlaybackService);
@@ -60,17 +31,16 @@ public sealed partial class MainPage : Page
     private void UpdateLayoutState(double width)
     {
         LayoutStateHelper.LastKnownWindowWidth = width;
-        IsCompact = LayoutStateHelper.IsCompact(width);
-        IsNarrow = LayoutStateHelper.IsNarrow(width);
+        var isCompact = LayoutStateHelper.IsCompact(width);
 
         if (RootNavigationView is not null)
         {
-            RootNavigationView.PaneDisplayMode = IsCompact
+            RootNavigationView.PaneDisplayMode = isCompact
                 ? NavigationViewPaneDisplayMode.LeftCompact
                 : NavigationViewPaneDisplayMode.Left;
         }
 
-        ApplyPlaybackBarLayout(IsNarrow);
+        ApplyPlaybackBarLayout(LayoutStateHelper.IsNarrow(width));
     }
 
     private void ApplyPlaybackBarLayout(bool narrow)
@@ -103,6 +73,8 @@ public sealed partial class MainPage : Page
 
         App.PlaybackService.PropertyChanged += PlaybackService_PropertyChanged;
         UpdatePlaybackButtonSymbol();
+        UpdateCurrentSongDisplay();
+        UpdatePositionSlider();
     }
 
     private void MainPage_Unloaded(object sender, RoutedEventArgs e)
@@ -119,18 +91,29 @@ public sealed partial class MainPage : Page
         else if (e.PropertyName == nameof(PlaybackService.CurrentSong))
         {
             UpdateCurrentSongDisplay();
+            UpdatePositionSlider();
+        }
+        else if (e.PropertyName == nameof(PlaybackService.Duration))
+        {
+            UpdatePositionSlider();
+        }
+        else if (e.PropertyName == nameof(PlaybackService.CurrentPosition))
+        {
+            if (PositionSlider is not null && Math.Abs(PositionSlider.Value - App.PlaybackService.CurrentPosition) > 1.0)
+            {
+                PositionSlider.Value = App.PlaybackService.CurrentPosition;
+            }
         }
     }
 
     private void UpdatePlaybackButtonSymbol()
     {
-        if (PlayPauseButton is null)
+        if (PlayPauseSymbol is null)
         {
             return;
         }
 
-        var symbol = App.PlaybackService.IsPlaying ? Symbol.Pause : Symbol.Play;
-        PlayPauseButton.Content = new SymbolIcon(symbol);
+        PlayPauseSymbol.Symbol = App.PlaybackService.IsPlaying ? Symbol.Pause : Symbol.Play;
     }
 
     private void UpdateCurrentSongDisplay()
@@ -147,8 +130,34 @@ public sealed partial class MainPage : Page
         }
     }
 
+    private void UpdatePositionSlider()
+    {
+        if (PositionSlider is null)
+        {
+            return;
+        }
+
+        PositionSlider.Maximum = App.PlaybackService.Duration > 0
+            ? App.PlaybackService.Duration
+            : 0;
+    }
+
+    private void PositionSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+    {
+        if (App.PlaybackService.Duration > 0)
+        {
+            App.PlaybackService.CurrentPosition = e.NewValue;
+        }
+    }
+
     private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
+        if (args.IsSettingsSelected)
+        {
+            ContentFrame.Navigate(typeof(SettingsPage), null, args.RecommendedNavigationTransitionInfo);
+            return;
+        }
+
         if (args.SelectedItem is NavigationViewItem item && item.Tag is string tag)
         {
             var pageType = tag switch
@@ -159,7 +168,7 @@ public sealed partial class MainPage : Page
                 "Playlists" => typeof(PlaylistsPage),
                 "Ideas" => typeof(IdeasPage),
                 "Stats" => typeof(StatsPage),
-                "Settings" => typeof(SettingsPage),
+                "ScanFolders" => typeof(ScanFoldersPage),
                 _ => typeof(SongsPage)
             };
 

@@ -80,6 +80,16 @@ public sealed class SongsViewModel : INotifyPropertyChanged
     public IReadOnlyList<SongSortField> SortFields { get; } =
         Enum.GetValues<SongSortField>().ToList();
 
+    public SongsViewModel(PlaybackService playback)
+    {
+        _dbContext = new AppDbContext
+        {
+            DbPath = App.DbContext.DbPath
+        };
+        _scanner = new LibraryScanner(_dbContext);
+        _playback = playback;
+    }
+
     public SongsViewModel(AppDbContext dbContext, PlaybackService playback)
     {
         _dbContext = dbContext;
@@ -111,7 +121,9 @@ public sealed class SongsViewModel : INotifyPropertyChanged
                 ReleaseDate = s.ReleaseDate,
                 DateAdded = s.DateAdded,
                 CoverPath = s.CoverPath,
-                PlayCount = s.PlaybackStats != null ? s.PlaybackStats.PlayCount : 0
+                PlayCount = s.PlaybackStats != null ? s.PlaybackStats.PlayCount : 0,
+                IsFavorite = s.IsFavorite,
+                Rating = s.Rating
             });
 
         var songs = await query.ToListAsync(cancellationToken);
