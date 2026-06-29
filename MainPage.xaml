@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="FloatHearing.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:FloatHearing"
+    xmlns:vm="using:FloatHearing.ViewModels"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <NavigationView
+            x:Name="RootNavigationView"
+            Grid.Row="0"
+            IsBackButtonVisible="Collapsed"
+            PaneDisplayMode="Left"
+            SelectionChanged="NavigationView_SelectionChanged">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItemHeader Content="媒体库" />
+                <NavigationViewItem
+                    x:Name="SongsNavItem"
+                    Content="歌曲"
+                    Icon="MusicInfo"
+                    Tag="Songs" />
+                <NavigationViewItem
+                    x:Name="AlbumsNavItem"
+                    Content="专辑"
+                    Icon="Folder"
+                    Tag="Albums" />
+                <NavigationViewItem
+                    x:Name="ArtistsNavItem"
+                    Content="艺术家"
+                    Icon="Contact"
+                    Tag="Artists" />
+
+                <NavigationViewItemSeparator />
+
+                <NavigationViewItem
+                    x:Name="PlaylistsNavItem"
+                    Content="歌单"
+                    Icon="List"
+                    Tag="Playlists" />
+                <NavigationViewItem
+                    x:Name="IdeasNavItem"
+                    Content="想法"
+                    Icon="Edit"
+                    Tag="Ideas" />
+                <NavigationViewItem
+                    x:Name="StatsNavItem"
+                    Content="统计与数据分析"
+                    Icon="FourBars"
+                    Tag="Stats" />
+
+                <NavigationViewItemSeparator />
+
+                <NavigationViewItem
+                    x:Name="SettingsNavItem"
+                    Content="扫描目录"
+                    Icon="Library"
+                    Tag="Settings" />
+            </NavigationView.MenuItems>
+
+            <Frame x:Name="ContentFrame" IsTabStop="True" />
+        </NavigationView>
+
+        <!-- 底部播放控制栏 -->
+        <Grid
+            x:Name="PlaybackBar"
+            Grid.Row="1"
+            Padding="24,16"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock
+                        x:Name="CurrentTitleText"
+                        FontWeight="SemiBold"
+                        Text="未在播放"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        x:Name="CurrentArtistText"
+                        Opacity="0.7"
+                        Text="选择一首歌曲开始播放"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <StackPanel
+                    x:Name="PlaybackButtons"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <Button
+                        Click="PreviousButton_Click"
+                        ToolTipService.ToolTip="上一首">
+                        <SymbolIcon Symbol="Previous" />
+                    </Button>
+                    <Button
+                        x:Name="PlayPauseButton"
+                        Click="PlayPauseButton_Click"
+                        ToolTipService.ToolTip="播放 / 暂停">
+                        <SymbolIcon Symbol="Play" />
+                    </Button>
+                    <Button
+                        Click="NextButton_Click"
+                        ToolTipService.ToolTip="下一首">
+                        <SymbolIcon Symbol="Next" />
+                    </Button>
+                </StackPanel>
+
+                <Slider
+                    x:Name="VolumeSlider"
+                    Grid.Column="2"
+                    Width="120"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Maximum="1"
+                    Minimum="0"
+                    StepFrequency="0.01"
+                    Value="{x:Bind ViewModel.Playback.Volume, Mode=TwoWay}" />
+            </Grid>
+
+            <Slider
+                Grid.Row="1"
+                Margin="0,12,0,0"
+                Maximum="{x:Bind ViewModel.Playback.Duration, Mode=OneWay}"
+                Minimum="0"
+                StepFrequency="1"
+                Value="{x:Bind ViewModel.Playback.CurrentPosition, Mode=TwoWay}" />
+        </Grid>
+    </Grid>
+</Page>

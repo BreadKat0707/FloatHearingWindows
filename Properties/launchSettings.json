@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FloatHearing (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "FloatHearing (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

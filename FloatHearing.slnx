@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../FloatHearing.Core/FloatHearing.Core.csproj" />
+  <Project Path="FloatHearing.csproj" />
+</Solution>
