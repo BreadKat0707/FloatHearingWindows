@@ -38,7 +38,7 @@ jobs:
         run: choco install innosetup --no-progress
 
       - name: Build installer with Inno Setup
-        run: & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" FloatHearing.iss
+        run: '& "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" FloatHearing.iss'
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
