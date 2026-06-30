@@ -11,25 +11,33 @@
 
     <Page.Resources>
         <converters:TimeSpanToStringConverter x:Key="TimeSpanToStringConverter" />
+        <converters:CoverPathToImageSourceConverter x:Key="CoverPathToImageSourceConverter" />
 
         <DataTemplate x:Key="AlbumItemTemplate" x:DataType="models:Album">
             <Grid Padding="8" Width="180">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="140" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <Border
                     Grid.Row="0"
+                    Width="164"
+                    Height="164"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     CornerRadius="8">
-                    <FontIcon
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Glyph="&#xE8B7;"
-                        FontSize="48"
-                        Opacity="0.5" />
+                    <Grid>
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Glyph="&#xE8B7;"
+                            FontSize="48"
+                            Opacity="0.5" />
+                        <Image
+                            Source="{x:Bind CoverPath, Mode=OneTime, Converter={StaticResource CoverPathToImageSourceConverter}, ConverterParameter=400}"
+                            Stretch="UniformToFill" />
+                    </Grid>
                 </Border>
 
                 <TextBlock

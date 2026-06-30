@@ -27,7 +27,7 @@
                 <Grid Grid.Column="0" Width="48" Height="48" Margin="0,0,12,0">
                     <Image
                         Stretch="UniformToFill"
-                        Source="{x:Bind CoverPath, Mode=OneTime, Converter={StaticResource CoverPathToImageSourceConverter}}"
+                        Source="{x:Bind CoverPath, Mode=OneTime, Converter={StaticResource CoverPathToImageSourceConverter}, ConverterParameter=80}"
                         Visibility="{x:Bind CoverPath, Mode=OneTime, Converter={StaticResource CoverPathToVisibilityConverter}}" />
                     <FontIcon
                         Glyph="&#xE8D6;"

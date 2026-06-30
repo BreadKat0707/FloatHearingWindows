@@ -12,6 +12,8 @@
 
     <Page.Resources>
         <converters:SecondsToTimeConverter x:Key="SecondsToTimeConverter" />
+        <converters:CoverPathToImageSourceConverter x:Key="CoverPathToImageSourceConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
     </Page.Resources>
 
     <Grid x:Name="RootGrid">
@@ -95,17 +97,37 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock
-                        x:Name="CurrentTitleText"
-                        FontWeight="SemiBold"
-                        Text="未在播放"
-                        TextTrimming="CharacterEllipsis" />
-                    <TextBlock
-                        x:Name="CurrentArtistText"
-                        Opacity="0.7"
-                        Text="选择一首歌曲开始播放"
-                        TextTrimming="CharacterEllipsis" />
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="12" Orientation="Horizontal">
+                    <Grid Width="40" Height="40">
+                        <Border
+                            Background="{ThemeResource LayerFillColorDefaultBrush}"
+                            CornerRadius="4" />
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Glyph="&#xE8D6;"
+                            FontSize="20"
+                            Opacity="0.6" />
+                        <Image
+                            Width="40"
+                            Height="40"
+                            Source="{x:Bind ViewModel.Playback.CurrentSong.CoverPath, Mode=OneWay, Converter={StaticResource CoverPathToImageSourceConverter}, ConverterParameter=80}"
+                            Stretch="UniformToFill"
+                            Visibility="{x:Bind ViewModel.Playback.CurrentSong.CoverPath, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}" />
+                    </Grid>
+
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                        <TextBlock
+                            x:Name="CurrentTitleText"
+                            FontWeight="SemiBold"
+                            Text="未在播放"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            x:Name="CurrentArtistText"
+                            Opacity="0.7"
+                            Text="选择一首歌曲开始播放"
+                            TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
                 </StackPanel>
 
                 <StackPanel

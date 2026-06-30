@@ -35,7 +35,7 @@ public sealed class AlbumsViewModel : INotifyPropertyChanged
                 Artist = string.IsNullOrEmpty(g.Key.AlbumArtist) ? "未知艺术家" : g.Key.AlbumArtist,
                 SongCount = g.Count(),
                 TotalDuration = TimeSpan.FromMilliseconds(g.Sum(s => s.DurationMs)),
-                CoverPath = g.FirstOrDefault(s => s.CoverPath != null)!.CoverPath
+                CoverPath = g.Where(s => s.CoverPath != null).Select(s => s.CoverPath).FirstOrDefault()
             })
             .OrderBy(a => a.Title)
             .ToListAsync(cancellationToken);

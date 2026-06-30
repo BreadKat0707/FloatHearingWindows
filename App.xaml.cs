@@ -53,6 +53,11 @@ public partial class App : Application
     /// </summary>
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        if (!await SingleInstanceService.TryRegisterAsync())
+        {
+            return;
+        }
+
         await InitializeDatabaseAsync();
         await PlaybackService.InitializeAsync();
         await SettingsService.LoadAsync();
@@ -60,7 +65,67 @@ public partial class App : Application
         MainWindow = new MainWindow();
         MainWindow.Activate();
 
+        InitializeTaskbarThumbnailButtons();
+
         await ShowCrashReportIfNeededAsync();
+    }
+
+    private static void InitializeTaskbarThumbnailButtons()
+    {
+        try
+        {
+            if (MainWindow is null)
+            {
+                return;
+            }
+
+            var service = new TaskbarThumbnailButtonService();
+
+            MainWindow.Activated += (sender, args) =>
+            {
+                if (args.WindowActivationState != WindowActivationState.Deactivated)
+                {
+                    return;
+                }
+
+                try
+                {
+                    var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow);
+                    service.Initialize(hwnd);
+                    service.UpdatePlaybackState(
+                        App.PlaybackService.IsPlaying,
+                        App.PlaybackService.CurrentSong is not null);
+                }
+                catch
+                {
+                    // 忽略初始化失败
+                }
+            };
+
+            // 如果窗口已经激活，直接初始化
+            if (MainWindow.Visible)
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow);
+                service.Initialize(hwnd);
+                service.UpdatePlaybackState(
+                    App.PlaybackService.IsPlaying,
+                    App.PlaybackService.CurrentSong is not null);
+            }
+
+            App.PlaybackService.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(PlaybackService.IsPlaying) || e.PropertyName == nameof(PlaybackService.CurrentSong))
+                {
+                    service.UpdatePlaybackState(
+                        App.PlaybackService.IsPlaying,
+                        App.PlaybackService.CurrentSong is not null);
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            CrashReportService.SaveCrashInfo(ex);
+        }
     }
 
     private static async Task ShowCrashReportIfNeededAsync()

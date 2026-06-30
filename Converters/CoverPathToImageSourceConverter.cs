@@ -17,6 +17,12 @@ public sealed class CoverPathToImageSourceConverter : IValueConverter
             {
                 var uri = new Uri($"ms-appdata:///local/{coverPath.Replace('\\', '/')}");
                 var bitmapImage = new BitmapImage();
+
+                if (parameter is string param && int.TryParse(param, out var decodePixelWidth))
+                {
+                    bitmapImage.DecodePixelWidth = decodePixelWidth;
+                }
+
                 bitmapImage.UriSource = uri;
                 return bitmapImage;
             }
@@ -26,7 +32,7 @@ public sealed class CoverPathToImageSourceConverter : IValueConverter
             }
         }
 
-        return new BitmapImage();
+        return null;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

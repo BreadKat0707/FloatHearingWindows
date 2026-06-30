@@ -1,0 +1,80 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: Restore dependencies
+        run: dotnet restore FloatHearing.slnx
+
+      - name: Create signing certificate
+        id: cert
+        shell: pwsh
+        run: |
+          $password = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object { [char]$_ })
+          $securePassword = ConvertTo-SecureString -String $password -Force -AsPlainText
+          $cert = New-SelfSignedCertificate `
+            -Type Custom `
+            -Subject "CN=FloatHearing" `
+            -KeyUsage DigitalSignature `
+            -FriendlyName "FloatHearing GitHub Actions" `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -NotAfter (Get-Date).AddYears(1)
+
+          $pfxPath = "$env:RUNNER_TEMP\FloatHearing_TemporaryKey.pfx"
+          Export-PfxCertificate `
+            -Cert "Cert:\CurrentUser\My\$($cert.Thumbprint)" `
+            -FilePath $pfxPath `
+            -Password $securePassword | Out-Null
+
+          "CERTIFICATE_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CERTIFICATE_PASSWORD=$password" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Publish MSIX (x64)
+        run: >
+          dotnet publish FloatHearing\FloatHearing.csproj `
+            -c Release `
+            -f net10.0-windows10.0.26100.0 `
+            -r win-x64 `
+            /p:Platform=x64 `
+            /p:SelfContained=true `
+            /p:PublishSingleFile=false `
+            /p:PackageCertificateKeyFile="${{ env.CERTIFICATE_PATH }}" `
+            /p:PackageCertificatePassword="${{ env.CERTIFICATE_PASSWORD }}" `
+            /p:UapAppxPackageBuildMode=StoreUpload `
+            /p:AppxBundle=Never
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloatHearing_MSIX_x64
+          path: FloatHearing/bin/Release/net10.0-windows10.0.26100.0/win-x64/AppPackages/**/*.msix
+          if-no-files-found: error
+
+      - name: Upload MSIX upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloatHearing_MSIXUpload_x64
+          path: FloatHearing/bin/Release/net10.0-windows10.0.26100.0/win-x64/AppPackages/**/*.msixupload
+          if-no-files-found: ignore
