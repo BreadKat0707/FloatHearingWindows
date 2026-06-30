@@ -25,11 +25,19 @@ public partial class App : Application
     public static PlaybackService PlaybackService { get; private set; } = null!;
 
     /// <summary>
+    /// 应用设置服务。
+    /// </summary>
+    public static SettingsService SettingsService { get; private set; } = null!;
+
+    /// <summary>
     /// Initializes the singleton application object.
     /// </summary>
     public App()
     {
         InitializeComponent();
+
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
         var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
         DbContext = new AppDbContext
@@ -37,6 +45,7 @@ public partial class App : Application
             DbPath = Path.Combine(localFolder, "floathearing_v2.db")
         };
         PlaybackService = new PlaybackService(DbContext);
+        SettingsService = new SettingsService(DbContext);
     }
 
     /// <summary>
@@ -46,9 +55,84 @@ public partial class App : Application
     {
         await InitializeDatabaseAsync();
         await PlaybackService.InitializeAsync();
+        await SettingsService.LoadAsync();
 
         MainWindow = new MainWindow();
         MainWindow.Activate();
+
+        await ShowCrashReportIfNeededAsync();
+    }
+
+    private static async Task ShowCrashReportIfNeededAsync()
+    {
+        if (!CrashReportService.HasPendingReport())
+        {
+            return;
+        }
+
+        var report = CrashReportService.ReadAndClearReport();
+        if (string.IsNullOrWhiteSpace(report))
+        {
+            return;
+        }
+
+        var textBox = new Microsoft.UI.Xaml.Controls.TextBox
+        {
+            Text = report,
+            IsReadOnly = true,
+            AcceptsReturn = true,
+            TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+            Height = 300,
+            FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas")
+        };
+
+        var copyButton = new Microsoft.UI.Xaml.Controls.Button
+        {
+            Content = "复制到剪贴板"
+        };
+
+        var panel = new Microsoft.UI.Xaml.Controls.StackPanel
+        {
+            Spacing = 12,
+            Children = { textBox, copyButton }
+        };
+
+        var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+        {
+            Title = "上次启动发生崩溃",
+            Content = panel,
+            CloseButtonText = "关闭",
+            XamlRoot = MainWindow?.Content?.XamlRoot
+        };
+
+        copyButton.Click += (s, e) =>
+        {
+            CrashReportService.CopyToClipboard(report);
+            copyButton.Content = "已复制";
+        };
+
+        try
+        {
+            await dialog.ShowAsync();
+        }
+        catch
+        {
+            // 忽略弹窗失败
+        }
+    }
+
+    private static void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            CrashReportService.SaveCrashInfo(ex);
+        }
+    }
+
+    private static void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        CrashReportService.SaveCrashInfo(e.Exception);
+        e.SetObserved();
     }
 
     private static async Task InitializeDatabaseAsync()

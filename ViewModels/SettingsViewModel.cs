@@ -1,143 +1,126 @@
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.EntityFrameworkCore;
-using FloatHearing.Data;
 using FloatHearing.Data.Entities;
 using FloatHearing.Services;
 
 namespace FloatHearing.ViewModels;
 
 /// <summary>
-/// 扫描目录管理页视图模型
+/// 设置页视图模型。
 /// </summary>
 public sealed class SettingsViewModel : INotifyPropertyChanged
 {
-    private readonly AppDbContext _dbContext;
-    private readonly LibraryScanner _scanner;
+    private readonly SettingsService _settingsService;
 
-    public ObservableCollection<ScanPathEntity> ScanPaths { get; } = [];
-
-    private bool _isScanning;
-    public bool IsScanning
+    public SettingsViewModel()
+        : this(App.SettingsService)
     {
-        get => _isScanning;
-        set => SetProperty(ref _isScanning, value);
     }
 
-    private string _scanStatus = string.Empty;
-    public string ScanStatus
+    public SettingsViewModel(SettingsService settingsService)
     {
-        get => _scanStatus;
-        set => SetProperty(ref _scanStatus, value);
+        _settingsService = settingsService;
+        _settingsService.PropertyChanged += SettingsService_PropertyChanged;
     }
 
-    public SettingsViewModel(AppDbContext dbContext)
+    public IReadOnlyList<LanguageOption> AvailableLanguages => _settingsService.AvailableLanguages;
+
+    public IReadOnlyList<ThemeModeOption> ThemeModeOptions { get; } = new List<ThemeModeOption>
     {
-        _dbContext = dbContext;
-        _scanner = new LibraryScanner(dbContext);
+        new ThemeModeOption { Mode = ThemeMode.System, DisplayName = "跟随系统设置" },
+        new ThemeModeOption { Mode = ThemeMode.Light, DisplayName = "浅色" },
+        new ThemeModeOption { Mode = ThemeMode.Dark, DisplayName = "深色" }
+    };
+
+    public IReadOnlyList<BackdropMaterialOption> BackdropMaterialOptions { get; } = new List<BackdropMaterialOption>
+    {
+        new BackdropMaterialOption { Material = BackdropMaterial.Solid, DisplayName = "Solid" },
+        new BackdropMaterialOption { Material = BackdropMaterial.Acrylic, DisplayName = "Acrylic" },
+        new BackdropMaterialOption { Material = BackdropMaterial.Mica, DisplayName = "Mica" },
+        new BackdropMaterialOption { Material = BackdropMaterial.MicaAlt, DisplayName = "Mica Alt" }
+    };
+
+    public ThemeModeOption SelectedThemeModeOption
+    {
+        get => ThemeModeOptions.First(o => o.Mode == _settingsService.ThemeMode);
+        set
+        {
+            if (value is not null && _settingsService.ThemeMode != value.Mode)
+            {
+                _settingsService.ThemeMode = value.Mode;
+                OnPropertyChanged();
+            }
+        }
     }
 
-    public async Task LoadScanPathsAsync(CancellationToken cancellationToken = default)
+    public BackdropMaterialOption SelectedBackdropMaterialOption
     {
-        ScanPaths.Clear();
-
-        var paths = await _dbContext.ScanPaths
-            .AsNoTracking()
-            .OrderBy(s => s.Path)
-            .ToListAsync(cancellationToken);
-
-        foreach (var path in paths)
+        get => BackdropMaterialOptions.First(o => o.Material == _settingsService.BackdropMaterial);
+        set
         {
-            ScanPaths.Add(path);
+            if (value is not null && _settingsService.BackdropMaterial != value.Material)
+            {
+                _settingsService.BackdropMaterial = value.Material;
+                OnPropertyChanged();
+            }
         }
     }
 
-    public async Task AddScanPathAsync(string path)
+    public string SelectedLanguage
     {
-        if (string.IsNullOrWhiteSpace(path))
+        get => _settingsService.Language;
+        set
         {
-            return;
+            if (_settingsService.Language != value)
+            {
+                _settingsService.Language = value;
+                OnPropertyChanged();
+            }
         }
-
-        var normalized = Path.GetFullPath(path);
-        if (await _dbContext.ScanPaths.AnyAsync(s => s.Path == normalized))
-        {
-            return;
-        }
-
-        _dbContext.ScanPaths.Add(new ScanPathEntity
-        {
-            Path = normalized,
-            CreatedAt = DateTime.UtcNow
-        });
-
-        await _dbContext.SaveChangesAsync();
-        await LoadScanPathsAsync();
     }
 
-    public async Task RemoveScanPathAsync(long id)
+    public async Task LoadAsync()
     {
-        var entity = await _dbContext.ScanPaths.FindAsync(id);
-        if (entity is null)
-        {
-            return;
-        }
-
-        _dbContext.ScanPaths.Remove(entity);
-        await _dbContext.SaveChangesAsync();
-        await LoadScanPathsAsync();
+        await _settingsService.LoadAsync();
+        OnPropertyChanged(nameof(SelectedThemeModeOption));
+        OnPropertyChanged(nameof(SelectedBackdropMaterialOption));
+        OnPropertyChanged(nameof(SelectedLanguage));
     }
 
-    public async Task ScanAllAsync(CancellationToken cancellationToken = default)
+    private void SettingsService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        var paths = await _dbContext.ScanPaths
-            .AsNoTracking()
-            .Select(s => s.Path)
-            .ToListAsync(cancellationToken);
-
-        if (paths.Count == 0)
+        if (e.PropertyName == nameof(SettingsService.ThemeMode))
         {
-            ScanStatus = "没有已添加的扫描目录";
-            return;
+            OnPropertyChanged(nameof(SelectedThemeModeOption));
         }
-
-        IsScanning = true;
-        ScanStatus = "准备扫描...";
-
-        var progress = new Progress<ScanProgress>(p =>
+        else if (e.PropertyName == nameof(SettingsService.BackdropMaterial))
         {
-            ScanStatus = p.TotalCount > 0
-                ? $"{p.Phase} ({p.ProcessedCount}/{p.TotalCount})"
-                : p.Phase;
-        });
-
-        try
-        {
-            await _scanner.ScanAsync(paths, progress, cancellationToken);
+            OnPropertyChanged(nameof(SelectedBackdropMaterialOption));
         }
-        catch (OperationCanceledException)
+        else if (e.PropertyName == nameof(SettingsService.Language))
         {
-            // 忽略取消
-        }
-        finally
-        {
-            IsScanning = false;
-            ScanStatus = string.Empty;
+            OnPropertyChanged(nameof(SelectedLanguage));
         }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
     {
-        if (EqualityComparer<T>.Default.Equals(field, value))
-        {
-            return false;
-        }
-
-        field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        return true;
     }
+}
+
+public sealed class ThemeModeOption
+{
+    public ThemeMode Mode { get; set; }
+
+    public string DisplayName { get; set; } = string.Empty;
+}
+
+public sealed class BackdropMaterialOption
+{
+    public BackdropMaterial Material { get; set; }
+
+    public string DisplayName { get; set; } = string.Empty;
 }

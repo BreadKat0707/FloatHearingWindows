@@ -7,6 +7,7 @@
     xmlns:models="using:FloatHearing.Models"
     xmlns:converters="using:FloatHearing.Converters"
     xmlns:core="using:FloatHearing.Core.Models"
+    xmlns:data="using:FloatHearing.Data.Entities"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -53,6 +54,35 @@
                     Text="{x:Bind Duration, Mode=OneTime, Converter={StaticResource TimeSpanToStringConverter}}" />
             </Grid>
         </DataTemplate>
+
+        <MenuFlyout x:Key="SongContextMenuFlyout">
+            <MenuFlyoutItem Text="立即播放" Click="PlayNowMenuItem_Click" />
+            <MenuFlyoutItem Text="下一首播放" Click="PlayNextMenuItem_Click" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutSubItem Text="专辑" FontFamily="Microsoft YaHei UI">
+                <MenuFlyoutItem Text="查看专辑" Click="ViewAlbumMenuItem_Click" />
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSubItem Text="艺术家" FontFamily="Microsoft YaHei UI">
+                <MenuFlyoutItem Text="查看艺术家" Click="ViewArtistMenuItem_Click" />
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem Text="在资源管理器中定位" Click="OpenContainingFolderMenuItem_Click" />
+            <MenuFlyoutItem Text="选择其他应用打开" Click="OpenWithExternalAppMenuItem_Click" />
+            <MenuFlyoutSubItem Text="复制" FontFamily="Microsoft YaHei UI">
+                <MenuFlyoutItem Text="复制歌曲名称" Click="CopySongNameMenuItem_Click" />
+                <MenuFlyoutItem Text="复制文件路径" Click="CopyFilePathMenuItem_Click" />
+            </MenuFlyoutSubItem>
+            <MenuFlyoutItem Text="音乐标签与文件属性" Click="PropertiesMenuItem_Click" />
+            <MenuFlyoutItem Text="从文件重新读取音轨信息" Click="RescanMetadataMenuItem_Click" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutSubItem Text="添加到歌单" x:Name="AddToPlaylistSubMenu" FontFamily="Microsoft YaHei UI">
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem Text="从音乐库中移除" Click="RemoveFromLibraryMenuItem_Click" />
+            <MenuFlyoutItem Text="从本地磁盘中删除" Click="DeleteFromDiskMenuItem_Click" />
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem Text="同名搜索" Click="SearchSameNameMenuItem_Click" />
+        </MenuFlyout>
     </Page.Resources>
 
     <Grid x:Name="RootGrid" Padding="24,16">
@@ -123,6 +153,7 @@
             ItemClick="SongsListView_ItemClick"
             ItemTemplate="{StaticResource SongItemTemplate}"
             ItemsSource="{x:Bind ViewModel.Songs}"
+            RightTapped="SongsListView_RightTapped"
             SelectionChanged="SongsListView_SelectionChanged"
             SelectionMode="Single" />
     </Grid>

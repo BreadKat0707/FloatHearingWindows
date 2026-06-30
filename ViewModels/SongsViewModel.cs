@@ -17,8 +17,12 @@ public sealed class SongsViewModel : INotifyPropertyChanged
     private readonly AppDbContext _dbContext;
     private readonly LibraryScanner _scanner;
     private readonly PlaybackService _playback;
+    private readonly SettingsService _settingsService;
+    private readonly SongContextMenuViewModel _contextMenu;
 
     public ObservableCollection<Song> Songs { get; } = [];
+
+    public SongContextMenuViewModel ContextMenu => _contextMenu;
 
     private Song? _selectedSong;
     public Song? SelectedSong
@@ -56,6 +60,7 @@ public sealed class SongsViewModel : INotifyPropertyChanged
         {
             if (SetProperty(ref _currentSortField, value))
             {
+                _settingsService.SongSortField = value;
                 _ = ReloadAndSortAsync();
             }
         }
@@ -69,6 +74,7 @@ public sealed class SongsViewModel : INotifyPropertyChanged
         {
             if (SetProperty(ref _currentSortDirection, value))
             {
+                _settingsService.SortDirection = value;
                 ApplySort();
             }
         }
@@ -81,6 +87,11 @@ public sealed class SongsViewModel : INotifyPropertyChanged
         Enum.GetValues<SongSortField>().ToList();
 
     public SongsViewModel(PlaybackService playback)
+        : this(playback, App.SettingsService)
+    {
+    }
+
+    public SongsViewModel(PlaybackService playback, SettingsService settingsService)
     {
         _dbContext = new AppDbContext
         {
@@ -88,13 +99,17 @@ public sealed class SongsViewModel : INotifyPropertyChanged
         };
         _scanner = new LibraryScanner(_dbContext);
         _playback = playback;
+        _settingsService = settingsService;
+        _contextMenu = new SongContextMenuViewModel(_dbContext, playback);
     }
 
-    public SongsViewModel(AppDbContext dbContext, PlaybackService playback)
+    public SongsViewModel(AppDbContext dbContext, PlaybackService playback, SettingsService settingsService)
     {
         _dbContext = dbContext;
         _scanner = new LibraryScanner(dbContext);
         _playback = playback;
+        _settingsService = settingsService;
+        _contextMenu = new SongContextMenuViewModel(dbContext, playback);
     }
 
     public async Task LoadLibraryAsync(CancellationToken cancellationToken = default)
@@ -133,7 +148,11 @@ public sealed class SongsViewModel : INotifyPropertyChanged
             Songs.Add(song);
         }
 
+        CurrentSortField = _settingsService.SongSortField;
+        CurrentSortDirection = _settingsService.SortDirection;
         ApplySort();
+
+        await _contextMenu.LoadPlaylistsAsync(cancellationToken);
     }
 
     public async Task ReloadAndSortAsync(CancellationToken cancellationToken = default)

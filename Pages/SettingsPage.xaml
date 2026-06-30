@@ -5,13 +5,71 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:FloatHearing.ViewModels"
     mc:Ignorable="d">
 
     <Grid Padding="24,16">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-            <FontIcon Glyph="&#xE713;" FontSize="64" Opacity="0.6" />
-            <TextBlock Text="设置" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" />
-            <TextBlock Text="应用偏好设置" Opacity="0.6" HorizontalAlignment="Center" />
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Text="设置"
+            Style="{ThemeResource TitleTextBlockStyle}"
+            Margin="0,0,0,16" />
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="24" MaxWidth="720" HorizontalAlignment="Left">
+
+                <!-- 语言 -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="语言" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                    <ComboBox
+                        x:Name="LanguageComboBox"
+                        Header="显示语言"
+                        Width="280"
+                        SelectedValue="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}"
+                        SelectedValuePath="Tag"
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{x:Bind ViewModel.AvailableLanguages}" />
+                </StackPanel>
+
+                <!-- 个性化 -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="个性化" Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                    <ComboBox
+                        x:Name="ThemeModeComboBox"
+                        Header="颜色模式"
+                        Width="280"
+                        ItemsSource="{x:Bind ViewModel.ThemeModeOptions}"
+                        SelectedItem="{x:Bind ViewModel.SelectedThemeModeOption, Mode=TwoWay}"
+                        SelectionChanged="ThemeModeComboBox_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="local:ThemeModeOption">
+                                <TextBlock Text="{x:Bind DisplayName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <ComboBox
+                        x:Name="BackdropMaterialComboBox"
+                        Header="背景材质"
+                        Width="280"
+                        ItemsSource="{x:Bind ViewModel.BackdropMaterialOptions}"
+                        SelectedItem="{x:Bind ViewModel.SelectedBackdropMaterialOption, Mode=TwoWay}"
+                        SelectionChanged="BackdropMaterialComboBox_SelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="local:BackdropMaterialOption">
+                                <TextBlock Text="{x:Bind DisplayName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

@@ -6,8 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:FloatHearing"
     xmlns:vm="using:FloatHearing.ViewModels"
+    xmlns:converters="using:FloatHearing.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:SecondsToTimeConverter x:Key="SecondsToTimeConverter" />
+    </Page.Resources>
 
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
@@ -142,10 +147,11 @@
                 x:Name="PositionSlider"
                 Grid.Row="1"
                 Margin="0,12,0,0"
-                Maximum="0"
+                Maximum="{x:Bind ViewModel.Playback.Duration, Mode=OneWay}"
                 Minimum="0"
                 StepFrequency="1"
-                ValueChanged="PositionSlider_ValueChanged" />
+                ThumbToolTipValueConverter="{StaticResource SecondsToTimeConverter}"
+                Value="{x:Bind ViewModel.Playback.CurrentPosition, Mode=TwoWay}" />
         </Grid>
     </Grid>
 </Page>

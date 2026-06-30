@@ -74,7 +74,6 @@ public sealed partial class MainPage : Page
         App.PlaybackService.PropertyChanged += PlaybackService_PropertyChanged;
         UpdatePlaybackButtonSymbol();
         UpdateCurrentSongDisplay();
-        UpdatePositionSlider();
     }
 
     private void MainPage_Unloaded(object sender, RoutedEventArgs e)
@@ -91,18 +90,6 @@ public sealed partial class MainPage : Page
         else if (e.PropertyName == nameof(PlaybackService.CurrentSong))
         {
             UpdateCurrentSongDisplay();
-            UpdatePositionSlider();
-        }
-        else if (e.PropertyName == nameof(PlaybackService.Duration))
-        {
-            UpdatePositionSlider();
-        }
-        else if (e.PropertyName == nameof(PlaybackService.CurrentPosition))
-        {
-            if (PositionSlider is not null && Math.Abs(PositionSlider.Value - App.PlaybackService.CurrentPosition) > 1.0)
-            {
-                PositionSlider.Value = App.PlaybackService.CurrentPosition;
-            }
         }
     }
 
@@ -132,22 +119,12 @@ public sealed partial class MainPage : Page
 
     private void UpdatePositionSlider()
     {
-        if (PositionSlider is null)
-        {
-            return;
-        }
-
-        PositionSlider.Maximum = App.PlaybackService.Duration > 0
-            ? App.PlaybackService.Duration
-            : 0;
+        // 进度条 Maximum 已绑定到 PlaybackService.Duration，此方法保留备用。
     }
 
     private void PositionSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
-        if (App.PlaybackService.Duration > 0)
-        {
-            App.PlaybackService.CurrentPosition = e.NewValue;
-        }
+        // 进度条现在使用 TwoWay 绑定， ValueChanged 仅用于调试或额外处理。
     }
 
     private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

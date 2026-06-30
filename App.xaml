@@ -10,7 +10,20 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+            
+            <!-- 全局中文字体使用微软雅黑 -->
+            <FontFamily x:Key="ContentControlThemeFontFamily">Microsoft YaHei UI</FontFamily>
+
+            <!-- 覆盖 MenuFlyout 相关控件默认字体 -->
+            <Style TargetType="MenuFlyoutItem">
+                <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+            </Style>
+            <Style TargetType="MenuFlyoutSubItem">
+                <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+            </Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Microsoft YaHei UI" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
