@@ -58,6 +58,8 @@ public sealed class LibraryScanner
 
         Directory.CreateDirectory(_coversDirectory);
 
+        var separators = await GetArtistSeparatorsAsync(cancellationToken);
+
         progress?.Report(new ScanProgress { Phase = "正在发现文件..." });
 
         var hiddenFolders = await _dbContext.HiddenFolders
@@ -110,7 +112,7 @@ public sealed class LibraryScanner
                 continue;
             }
 
-            var song = await ReadSongMetadataAsync(filePath, fileInfo, existing);
+            var song = await ReadSongMetadataAsync(filePath, fileInfo, existing, separators);
             if (song is null)
             {
                 continue;
@@ -233,10 +235,11 @@ public sealed class LibraryScanner
     /// </summary>
     public async Task<SongEntity?> RescanSingleAsync(string filePath, FileInfo fileInfo, SongEntity? existing)
     {
-        return await ReadSongMetadataAsync(filePath, fileInfo, existing);
+        var separators = await GetArtistSeparatorsAsync();
+        return await ReadSongMetadataAsync(filePath, fileInfo, existing, separators);
     }
 
-    private async Task<SongEntity?> ReadSongMetadataAsync(string filePath, FileInfo fileInfo, SongEntity? existing)
+    private async Task<SongEntity?> ReadSongMetadataAsync(string filePath, FileInfo fileInfo, SongEntity? existing, string separators)
     {
         return await Task.Run(() =>
         {
@@ -246,12 +249,19 @@ public sealed class LibraryScanner
                 var tag = tagFile.Tag;
                 var properties = tagFile.Properties;
 
+                var rawArtist = string.IsNullOrWhiteSpace(tag.FirstPerformer) ? "未知艺术家" : tag.FirstPerformer;
+                var rawAlbumArtist = string.IsNullOrWhiteSpace(tag.FirstAlbumArtist) ? rawArtist : tag.FirstAlbumArtist;
+                var album = string.IsNullOrWhiteSpace(tag.Album) ? "未知专辑" : tag.Album;
+
+                var artists = ParseArtistNames(rawArtist, separators);
+                var albumArtists = ParseArtistNames(rawAlbumArtist, separators);
+
+                var artist = artists.Count > 0 ? artists[0] : "未知艺术家";
+                var albumArtist = albumArtists.Count > 0 ? albumArtists[0] : artist;
+
                 var title = string.IsNullOrWhiteSpace(tag.Title)
                     ? Path.GetFileNameWithoutExtension(filePath)
                     : tag.Title;
-                var artist = string.IsNullOrWhiteSpace(tag.FirstPerformer) ? "未知艺术家" : tag.FirstPerformer;
-                var album = string.IsNullOrWhiteSpace(tag.Album) ? "未知专辑" : tag.Album;
-                var albumArtist = string.IsNullOrWhiteSpace(tag.FirstAlbumArtist) ? artist : tag.FirstAlbumArtist;
 
                 var durationMs = (long)properties.Duration.TotalMilliseconds;
                 var coverPath = existing?.CoverPath;
@@ -273,6 +283,8 @@ public sealed class LibraryScanner
                     Artist = artist,
                     Album = album,
                     AlbumArtist = albumArtist,
+                    ArtistNames = FormatArtistNames(artists),
+                    AlbumArtistNames = FormatArtistNames(albumArtists),
                     FilePath = filePath,
                     FileName = Path.GetFileName(filePath),
                     DurationMs = durationMs,
@@ -298,6 +310,60 @@ public sealed class LibraryScanner
                 return null;
             }
         });
+    }
+
+    private async Task<string> GetArtistSeparatorsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var settings = await _dbContext.AppSettings
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return string.IsNullOrWhiteSpace(settings?.ArtistSeparators)
+                ? "& / , 、 feat. ft. FEAT. FT. Feat. Ft."
+                : settings.ArtistSeparators;
+        }
+        catch
+        {
+            return "& / , 、 feat. ft. FEAT. FT. Feat. Ft.";
+        }
+    }
+
+    private static List<string> ParseArtistNames(string input, string separators)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return [];
+        }
+
+        var separatorList = separators
+            .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+            .OrderByDescending(s => s.Length)
+            .ToList();
+
+        var normalized = input;
+        foreach (var sep in separatorList)
+        {
+            normalized = normalized.Replace(sep, ";", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return normalized
+            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static string FormatArtistNames(List<string> artists)
+    {
+        if (artists.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return ";" + string.Join(";", artists) + ";";
     }
 
     private string? SaveCover(string filePath, TagLib.IPicture picture)

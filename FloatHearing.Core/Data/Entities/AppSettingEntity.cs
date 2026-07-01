@@ -54,4 +54,9 @@ public sealed class AppSettingEntity
     /// 歌曲列表排序方向。
     /// </summary>
     public int SortDirection { get; set; }
+
+    /// <summary>
+    /// 艺术家分隔符，多个分隔符用空格分隔。
+    /// </summary>
+    public string ArtistSeparators { get; set; } = "& / , 、 feat. ft. FEAT. FT. Feat. Ft.";
 }

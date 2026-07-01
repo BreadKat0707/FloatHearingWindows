@@ -49,6 +49,16 @@ public sealed class SongEntity
     /// </summary>
     public string? CoverPath { get; set; }
 
+    /// <summary>
+    /// 规范化后的所有艺术家名称，使用分号分隔。
+    /// </summary>
+    public string ArtistNames { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 规范化后的所有专辑艺术家名称，使用分号分隔。
+    /// </summary>
+    public string AlbumArtistNames { get; set; } = string.Empty;
+
     public bool IsFavorite { get; set; }
 
     public int Rating { get; set; }

@@ -79,12 +79,26 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public string ArtistSeparators
+    {
+        get => _settingsService.ArtistSeparators;
+        set
+        {
+            if (_settingsService.ArtistSeparators != value)
+            {
+                _settingsService.ArtistSeparators = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public async Task LoadAsync()
     {
         await _settingsService.LoadAsync();
         OnPropertyChanged(nameof(SelectedThemeModeOption));
         OnPropertyChanged(nameof(SelectedBackdropMaterialOption));
         OnPropertyChanged(nameof(SelectedLanguage));
+        OnPropertyChanged(nameof(ArtistSeparators));
     }
 
     private void SettingsService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -100,6 +114,10 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         else if (e.PropertyName == nameof(SettingsService.Language))
         {
             OnPropertyChanged(nameof(SelectedLanguage));
+        }
+        else if (e.PropertyName == nameof(SettingsService.ArtistSeparators))
+        {
+            OnPropertyChanged(nameof(ArtistSeparators));
         }
     }
 

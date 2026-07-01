@@ -69,6 +69,23 @@
                     </ComboBox>
                 </StackPanel>
 
+                <!-- 媒体库 -->
+                <StackPanel Spacing="12">
+                    <TextBlock Text="媒体库" Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                    <TextBox
+                        Header="艺术家分隔符"
+                        Width="280"
+                        TextWrapping="Wrap"
+                        AcceptsReturn="False"
+                        Text="{x:Bind ViewModel.ArtistSeparators, Mode=TwoWay}" />
+
+                    <TextBlock
+                        Text="多个分隔符用空格分隔，例如：&amp; / , feat. ft."
+                        Opacity="0.6"
+                        FontSize="12" />
+                </StackPanel>
+
             </StackPanel>
         </ScrollViewer>
     </Grid>

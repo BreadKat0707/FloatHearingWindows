@@ -48,6 +48,21 @@ public sealed class SettingsService : INotifyPropertyChanged
         OnPropertyChanged(nameof(AvailableLanguages));
         OnPropertyChanged(nameof(SongSortField));
         OnPropertyChanged(nameof(SortDirection));
+        OnPropertyChanged(nameof(ArtistSeparators));
+    }
+
+    public string ArtistSeparators
+    {
+        get => _settings.ArtistSeparators;
+        set
+        {
+            if (_settings.ArtistSeparators != value)
+            {
+                _settings.ArtistSeparators = value;
+                _ = SaveAsync();
+                OnPropertyChanged();
+            }
+        }
     }
 
     /// <summary>

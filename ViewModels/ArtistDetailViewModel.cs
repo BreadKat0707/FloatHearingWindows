@@ -39,9 +39,10 @@ public sealed class ArtistDetailViewModel : INotifyPropertyChanged
     {
         Songs.Clear();
 
+        var searchTerm = ";" + Artist.Name + ";";
         var songs = await _dbContext.Songs
             .AsNoTracking()
-            .Where(s => s.Artist == Artist.Name)
+            .Where(s => s.ArtistNames.Contains(searchTerm))
             .OrderBy(s => s.Album)
             .ThenBy(s => s.DiscNumber ?? 0)
             .ThenBy(s => s.TrackNumber ?? 0)
@@ -78,9 +79,10 @@ public sealed class ArtistDetailViewModel : INotifyPropertyChanged
     {
         Albums.Clear();
 
+        var searchTerm = ";" + Artist.Name + ";";
         var albums = await _dbContext.Songs
             .AsNoTracking()
-            .Where(s => s.AlbumArtist == Artist.Name && !string.IsNullOrEmpty(s.Album))
+            .Where(s => s.AlbumArtistNames.Contains(searchTerm) && !string.IsNullOrEmpty(s.Album))
             .GroupBy(s => new { s.Album, s.AlbumArtist })
             .Select(g => new Album
             {
@@ -103,9 +105,14 @@ public sealed class ArtistDetailViewModel : INotifyPropertyChanged
     {
         FeaturedAlbums.Clear();
 
+        var artistSearchTerm = ";" + Artist.Name + ";";
+        var albumArtistSearchTerm = artistSearchTerm;
+
         var featuredAlbums = await _dbContext.Songs
             .AsNoTracking()
-            .Where(s => s.Artist == Artist.Name && s.AlbumArtist != Artist.Name && !string.IsNullOrEmpty(s.Album))
+            .Where(s => s.ArtistNames.Contains(artistSearchTerm)
+                && !s.AlbumArtistNames.Contains(albumArtistSearchTerm)
+                && !string.IsNullOrEmpty(s.Album))
             .GroupBy(s => new { s.Album, s.AlbumArtist })
             .Select(g => new Album
             {
