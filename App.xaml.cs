@@ -72,60 +72,8 @@ public partial class App : Application
 
     private static void InitializeTaskbarThumbnailButtons()
     {
-        try
-        {
-            if (MainWindow is null)
-            {
-                return;
-            }
-
-            var service = new TaskbarThumbnailButtonService();
-
-            MainWindow.Activated += (sender, args) =>
-            {
-                if (args.WindowActivationState != WindowActivationState.Deactivated)
-                {
-                    return;
-                }
-
-                try
-                {
-                    var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow);
-                    service.Initialize(hwnd);
-                    service.UpdatePlaybackState(
-                        App.PlaybackService.IsPlaying,
-                        App.PlaybackService.CurrentSong is not null);
-                }
-                catch
-                {
-                    // 忽略初始化失败
-                }
-            };
-
-            // 如果窗口已经激活，直接初始化
-            if (MainWindow.Visible)
-            {
-                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow);
-                service.Initialize(hwnd);
-                service.UpdatePlaybackState(
-                    App.PlaybackService.IsPlaying,
-                    App.PlaybackService.CurrentSong is not null);
-            }
-
-            App.PlaybackService.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(PlaybackService.IsPlaying) || e.PropertyName == nameof(PlaybackService.CurrentSong))
-                {
-                    service.UpdatePlaybackState(
-                        App.PlaybackService.IsPlaying,
-                        App.PlaybackService.CurrentSong is not null);
-                }
-            };
-        }
-        catch (Exception ex)
-        {
-            CrashReportService.SaveCrashInfo(ex);
-        }
+        // 任务栏缩略图按钮服务暂时禁用，因为 ThumbBarAddButtons 在 WinUI 3 打包应用中
+        // 会触发 coreclr 访问冲突崩溃。后续如需此功能，需改用更稳定的实现。
     }
 
     private static async Task ShowCrashReportIfNeededAsync()
