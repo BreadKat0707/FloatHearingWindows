@@ -54,8 +54,10 @@
 
         <ListView
             Grid.Row="1"
+            x:Name="ArtistsListView"
             ItemsSource="{x:Bind ViewModel.Artists}"
             ItemTemplate="{StaticResource ArtistItemTemplate}"
-            IsItemClickEnabled="True" />
+            IsItemClickEnabled="True"
+            ItemClick="ArtistsListView_ItemClick" />
     </Grid>
 </Page>
