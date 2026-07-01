@@ -98,7 +98,12 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="12" Orientation="Horizontal">
+                <StackPanel
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Spacing="12"
+                    Orientation="Horizontal"
+                    Tapped="PlaybackInfo_Tapped">
                     <Grid Width="40" Height="40">
                         <Border
                             Background="{ThemeResource LayerFillColorDefaultBrush}"

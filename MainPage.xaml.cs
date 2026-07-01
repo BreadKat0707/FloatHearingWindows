@@ -172,6 +172,11 @@ public sealed partial class MainPage : Page
         }
     }
 
+    private void PlaybackInfo_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        ContentFrame.Navigate(typeof(PlayerPage));
+    }
+
     private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
     {
         App.PlaybackService.PlayPause();
