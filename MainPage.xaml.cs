@@ -70,10 +70,29 @@ public sealed partial class MainPage : Page
         UpdateLayoutState(ActualSize.X);
         RootNavigationView.SelectedItem = SongsNavItem;
         ContentFrame.Navigate(typeof(SongsPage));
+        ContentFrame.Navigated += ContentFrame_Navigated;
 
         App.PlaybackService.PropertyChanged += PlaybackService_PropertyChanged;
         UpdatePlaybackButtonSymbol();
         UpdateCurrentSongDisplay();
+    }
+
+    private void ContentFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+    {
+        if (RootNavigationView is null)
+        {
+            return;
+        }
+
+        RootNavigationView.IsBackEnabled = ContentFrame.CanGoBack;
+    }
+
+    private void NavigationView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+    {
+        if (ContentFrame.CanGoBack)
+        {
+            ContentFrame.GoBack();
+        }
     }
 
     private void MainPage_Unloaded(object sender, RoutedEventArgs e)

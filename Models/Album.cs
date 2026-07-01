@@ -15,5 +15,7 @@ public sealed class Album
 
     public string? CoverPath { get; set; }
 
+    public string? ReleaseDateText { get; set; }
+
     public override string ToString() => string.IsNullOrWhiteSpace(Title) ? "未知专辑" : Title;
 }

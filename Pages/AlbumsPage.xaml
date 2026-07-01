@@ -70,8 +70,10 @@
 
         <GridView
             Grid.Row="1"
+            x:Name="AlbumsGridView"
             ItemsSource="{x:Bind ViewModel.Albums}"
             ItemTemplate="{StaticResource AlbumItemTemplate}"
-            IsItemClickEnabled="True" />
+            IsItemClickEnabled="True"
+            ItemClick="AlbumsGridView_ItemClick" />
     </Grid>
 </Page>

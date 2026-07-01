@@ -25,7 +25,8 @@
         <NavigationView
             x:Name="RootNavigationView"
             Grid.Row="0"
-            IsBackButtonVisible="Collapsed"
+            IsBackButtonVisible="Auto"
+            BackRequested="NavigationView_BackRequested"
             PaneDisplayMode="Left"
             SelectionChanged="NavigationView_SelectionChanged">
 
