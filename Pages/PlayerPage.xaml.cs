@@ -15,12 +15,11 @@ public sealed partial class PlayerPage : Page
         DataContext = App.PlaybackService;
     }
 
+    public static event EventHandler? CloseRequested;
+
     private void BackButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (Frame.CanGoBack)
-        {
-            Frame.GoBack();
-        }
+        CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void PlayPauseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

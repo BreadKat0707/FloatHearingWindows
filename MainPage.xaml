@@ -78,6 +78,15 @@
             <Frame x:Name="ContentFrame" IsTabStop="True" />
         </NavigationView>
 
+        <!-- 全屏播放器覆盖层 -->
+        <Frame
+            x:Name="PlayerOverlayFrame"
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Visibility="Collapsed"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            IsTabStop="True" />
+
         <!-- 底部播放控制栏 -->
         <Grid
             x:Name="PlaybackBar"

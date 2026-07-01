@@ -72,9 +72,16 @@ public sealed partial class MainPage : Page
         ContentFrame.Navigate(typeof(SongsPage));
         ContentFrame.Navigated += ContentFrame_Navigated;
 
+        PlayerPage.CloseRequested += PlayerPage_CloseRequested;
+
         App.PlaybackService.PropertyChanged += PlaybackService_PropertyChanged;
         UpdatePlaybackButtonSymbol();
         UpdateCurrentSongDisplay();
+    }
+
+    private void PlayerPage_CloseRequested(object? sender, EventArgs e)
+    {
+        HidePlayerOverlay();
     }
 
     private void ContentFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -98,6 +105,7 @@ public sealed partial class MainPage : Page
     private void MainPage_Unloaded(object sender, RoutedEventArgs e)
     {
         App.PlaybackService.PropertyChanged -= PlaybackService_PropertyChanged;
+        PlayerPage.CloseRequested -= PlayerPage_CloseRequested;
     }
 
     private void PlaybackService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -174,7 +182,32 @@ public sealed partial class MainPage : Page
 
     private void PlaybackInfo_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
-        ContentFrame.Navigate(typeof(PlayerPage));
+        ShowPlayerOverlay();
+    }
+
+    private void ShowPlayerOverlay()
+    {
+        if (PlayerOverlayFrame is null)
+        {
+            return;
+        }
+
+        PlayerOverlayFrame.Visibility = Visibility.Visible;
+        if (PlayerOverlayFrame.Content is not PlayerPage)
+        {
+            PlayerOverlayFrame.Navigate(typeof(PlayerPage));
+        }
+    }
+
+    private void HidePlayerOverlay()
+    {
+        if (PlayerOverlayFrame is null)
+        {
+            return;
+        }
+
+        PlayerOverlayFrame.Visibility = Visibility.Collapsed;
+        PlayerOverlayFrame.Content = null;
     }
 
     private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
