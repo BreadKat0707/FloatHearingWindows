@@ -30,5 +30,14 @@
             navigation events and the Loaded lifecycle.
         -->
         <Frame x:Name="RootFrame" Grid.Row="1" />
+
+        <!-- 全屏播放器覆盖层，覆盖整个窗口包括标题栏 -->
+        <Frame
+            x:Name="PlayerOverlayFrame"
+            Grid.Row="0"
+            Grid.RowSpan="2"
+            Visibility="Collapsed"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            IsTabStop="True" />
     </Grid>
 </Window>

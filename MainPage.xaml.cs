@@ -81,7 +81,10 @@ public sealed partial class MainPage : Page
 
     private void PlayerPage_CloseRequested(object? sender, EventArgs e)
     {
-        HidePlayerOverlay();
+        if (App.MainWindow is MainWindow mainWindow)
+        {
+            mainWindow.HidePlayerOverlay();
+        }
     }
 
     private void ContentFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -187,27 +190,10 @@ public sealed partial class MainPage : Page
 
     private void ShowPlayerOverlay()
     {
-        if (PlayerOverlayFrame is null)
+        if (App.MainWindow is MainWindow mainWindow)
         {
-            return;
+            mainWindow.ShowPlayerOverlay();
         }
-
-        PlayerOverlayFrame.Visibility = Visibility.Visible;
-        if (PlayerOverlayFrame.Content is not PlayerPage)
-        {
-            PlayerOverlayFrame.Navigate(typeof(PlayerPage));
-        }
-    }
-
-    private void HidePlayerOverlay()
-    {
-        if (PlayerOverlayFrame is null)
-        {
-            return;
-        }
-
-        PlayerOverlayFrame.Visibility = Visibility.Collapsed;
-        PlayerOverlayFrame.Content = null;
     }
 
     private void PlayPauseButton_Click(object sender, RoutedEventArgs e)

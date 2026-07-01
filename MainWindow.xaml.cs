@@ -24,4 +24,19 @@ public sealed partial class MainWindow : Window
         // Navigate the root frame to the main page on startup.
         RootFrame.Navigate(typeof(MainPage));
     }
+
+    public void ShowPlayerOverlay()
+    {
+        PlayerOverlayFrame.Visibility = Visibility.Visible;
+        if (PlayerOverlayFrame.Content is not Pages.PlayerPage)
+        {
+            PlayerOverlayFrame.Navigate(typeof(Pages.PlayerPage));
+        }
+    }
+
+    public void HidePlayerOverlay()
+    {
+        PlayerOverlayFrame.Visibility = Visibility.Collapsed;
+        PlayerOverlayFrame.Content = null;
+    }
 }
